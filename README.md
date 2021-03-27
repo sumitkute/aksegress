@@ -30,7 +30,7 @@ The series of steps involves
 
 1. Create the Spoke VNets and peer them to the central HUB VNet. When you peer, you need to ensure the peered VNet has forward traffic enabled as shown in figure below.
 
-![VNET Peering Settings](/images/VNETPeer.png)
+   ![VNET Peering Settings](/images/VNETPeer.png)
 
 2. Provision an Azure Firewall in the Hub VNet. Alternatively, you can use any other NVA appliance
 
@@ -54,15 +54,15 @@ The series of steps involves
 
    ![AKS Create Command](/images/AKSClusterCreationCommand.png)
 
-` az aks create -g aksoutboundtest -n privateaksspoke2 -l eastus2 --node-count 1 --generate-ssh-keys --network-plugin Azure --outbound-type userDefinedRouting --service-cidr 10.41.0.0/16 --dns-service-ip 10.41.0.10 --docker-bridge-address 172.17.0.1/16 --vnet-subnet-id /subscriptions/14xxxxx-xxxx-xxxx-xxxx-xdxxdxxxxd/resourceGroups/aksoutboundtest/providers/Microsoft.Network/virtualNetworks/SPOKE1/subnets/SPOKE1_AKS --enable-private-cluster --enable-managed-identity `
+    ` az aks create -g aksoutboundtest -n privateaksspoke2 -l eastus2 --node-count 1 --generate-ssh-keys --network-plugin Azure --outbound-type userDefinedRouting --service-cidr  10.41.0.0/16 --dns-service-ip 10.41.0.10 --docker-bridge-address 172.17.0.1/16 --vnet-subnet-id /subscriptions/14xxxxx-xxxx-xxxx-xxxx-xdxxdxxxxd/resourceGroups/aksoutboundtest/providers/Microsoft.Network/virtualNetworks/SPOKE1/subnets/SPOKE1_AKS --enable-private-cluster --enable-managed-identity `
 
 6. You need to give “Network Contributor” access to the newly created managed identity on SPOKE1 VNET where AKS is now deployed. Use the command to see the details on the newly created cluster. The principal Id shown below is your clientId.
 
-`$ az aks show --name privateaksspoke1 -g aksoutboundtest `
+   `$ az aks show --name privateaksspoke1 -g aksoutboundtest `
 
 7. Connect to the AKS cluster and try to list the resources.
 
-` $ az aks get-credentials --resource-group aksoutboundtest --name privateaksspoke1 `
+   ` $ az aks get-credentials --resource-group aksoutboundtest --name privateaksspoke1 `
 
    ![Az AKS Get-Credentials Command](/images/AKSKubeCtlShow1.png)
 
