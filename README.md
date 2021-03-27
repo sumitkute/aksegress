@@ -27,26 +27,32 @@ We setup an environment to test the above use case. The setup looks as below:
 ## Set Up
 
 The series of steps involves
+
 1. Create the Spoke VNets and peer them to the central HUB VNet. When you peer, you need to ensure the peered VNet has forward traffic enabled as shown in figure below.
 
-![Network Architecture](/images/VNETPeer.png)
+![VNET Peering Settings](/images/VNETPeer.png)
 
 2. Provision an Azure Firewall in the Hub VNet. Alternatively, you can use any other NVA appliance
+
 3. Create a route table and attach it to the Spoke AKS subnets as shown in Figure 1 above. 0.0.0.0/0 indicates all internet bound requests and these requests should be routed to Firewall Private IP address
-![Route Table](/images/RouteTable.png)
+
+   ![Route Table](/images/RouteTable.png)
 
 4. Define the below network firewall rules to allow outbound requests to Azure IPs. If you need fine grained CIDRs please refer here.
-![Firewall Network Policies](/images/FirewallNWPolicies.png)
 
-#### Application Rule. Note: To create a FQDN based rule on firewall you need to enable DNS proxy on Firewall.
-![Firewall App Policies](/images/FirewallAppPolicies.png)
+   ![Firewall Network Policies](/images/FirewallNWPolicies.png)
 
-#### Under firewall policy -> DNS enable the proxy
-![Firewall DNS Settings](/images/FirewallDNSSettings.png)
+  #### Application Rule. Note: To create a FQDN based rule on firewall you need to enable DNS proxy on Firewall.
+
+   ![Firewall App Policies](/images/FirewallAppPolicies.png)
+
+  #### Under firewall policy -> DNS enable the proxy
+
+   ![Firewall DNS Settings](/images/FirewallDNSSettings.png)
 
 5. Create a AKS private cluster with Managed Identity in SPOKE1. Since we are ensuring the egress traffic flows via firewall, we need create the cluster with outbound-type as userDefinedRouting. This will ensure no public LB is created. The default value is LoadBalancer, which create a public LB and routes all traffic via that LB.
 
-![AKS Create Command](/images/AKSClusterCreationCommand.png)
+   ![AKS Create Command](/images/AKSClusterCreationCommand.png)
 
 ` az aks create -g aksoutboundtest -n privateaksspoke2 -l eastus2 --node-count 1 --generate-ssh-keys --network-plugin Azure --outbound-type userDefinedRouting --service-cidr 10.41.0.0/16 --dns-service-ip 10.41.0.10 --docker-bridge-address 172.17.0.1/16 --vnet-subnet-id /subscriptions/14xxxxx-xxxx-xxxx-xxxx-xdxxdxxxxd/resourceGroups/aksoutboundtest/providers/Microsoft.Network/virtualNetworks/SPOKE1/subnets/SPOKE1_AKS --enable-private-cluster --enable-managed-identity `
 
@@ -58,39 +64,39 @@ The series of steps involves
 
 ` $ az aks get-credentials --resource-group aksoutboundtest --name privateaksspoke1 `
 
-![Az AKS Get-Credentials Command](/images/AKSKubeCtlShow1.png)
+   ![Az AKS Get-Credentials Command](/images/AKSKubeCtlShow1.png)
 
 8. Now let’s see if we can connect it from in SPOKE 2 VM. Spoke 2 VNET is connected via HUB, so all the traffic from SPOKE2 to SPOKE1 can traverse via HUB.
 
-![Az AKS Get-Credentials Command Error](/images/AKSKubeCtlShow2.png)
+   ![Az AKS Get-Credentials Command Error](/images/AKSKubeCtlShow2.png)
 
-Oh!! This is not resolving the master DNS name, now let’s look how we can resolve this from another VNET even if its running in different subscription. Note the private cluster API Address from cluster over page as shown below.
+Oh!! This is not resolving the master DNS name, now let’s look how we can resolve this from another VNET even if its running in different subscription. Note the private   cluster API Address from cluster over page as shown below.
 
-![API Server Address](/images/APIServerAddress.png)
+   ![API Server Address](/images/APIServerAddress.png)
 
 Find the private DNS zone matching the API address (exclude first hostname). In the virtual network links by default, it is linked to the VNET where the cluster is created as shown below.
 
-![Private DNS Show](/images/PrivateZoneLinkVNET.png)
+   ![Private DNS Show](/images/PrivateZoneLinkVNET.png)
 
 Now let’s link the new VNET. Click +Add. As shown in the below screenshot, we can link any VNET from any subscription in the same tenant.
 
-![Private DNS Add](/images/PrivateZoneLinkVNETAdd.png)
+   ![Private DNS Add](/images/PrivateZoneLinkVNETAdd.png)
 
 As show below its added
 
-![Private DNS Complete](/images/PrivateZoneLinkVNETComplete.png)
+   ![Private DNS Complete](/images/PrivateZoneLinkVNETComplete.png)
 
 Now let’s try again.
 
-![Kubectl Command Error](/images/AKSKubeCtlShow3.png)
+   ![Kubectl Command Error](/images/AKSKubeCtlShow3.png)
 
 Since all the traffic goes via firewall, we need to allow the API server IP address in the firewall. In the above private zone overview, you can find the A name entry and the private IP address of API server. Allowed it in firewall network policy. 
 
-![Firewall Master Whitelisting](/images/FirewallNWPolicies2.png)
+   ![Firewall Master Whitelisting](/images/FirewallNWPolicies2.png)
 
 Now let’s try again and it should work.
 
-![Kubectl Command Successful](/images/AKSKubeCtlShow4.png)
+   ![Kubectl Command Successful](/images/AKSKubeCtlShow4.png)
 
 > Note: Ensure you have the route table attached to all the SPOKE VNETs
 
