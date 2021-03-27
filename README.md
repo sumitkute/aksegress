@@ -42,11 +42,11 @@ The series of steps involves
 
    ![Firewall Network Policies](/images/FirewallNWPolicies.png)
 
-  #### Application Rule. Note: To create a FQDN based rule on firewall you need to enable DNS proxy on Firewall.
+   Application Rule. Note: To create a FQDN based rule on firewall you need to enable DNS proxy on Firewall.
 
    ![Firewall App Policies](/images/FirewallAppPolicies.png)
 
-  #### Under firewall policy -> DNS enable the proxy
+   Under firewall policy -> DNS enable the proxy
 
    ![Firewall DNS Settings](/images/FirewallDNSSettings.png)
 
@@ -70,43 +70,43 @@ The series of steps involves
 
    ![Az AKS Get-Credentials Command Error](/images/AKSKubeCtlShow2.png)
 
-Oh!! This is not resolving the master DNS name, now let’s look how we can resolve this from another VNET even if its running in different subscription. Note the private   cluster API Address from cluster over page as shown below.
+   Oh!! This is not resolving the master DNS name, now let’s look how we can resolve this from another VNET even if its running in different subscription. Note the private   cluster API Address from cluster over page as shown below.
 
    ![API Server Address](/images/APIServerAddress.png)
 
-Find the private DNS zone matching the API address (exclude first hostname). In the virtual network links by default, it is linked to the VNET where the cluster is created as shown below.
+   Find the private DNS zone matching the API address (exclude first hostname). In the virtual network links by default, it is linked to the VNET where the cluster is created as shown below.
 
    ![Private DNS Show](/images/PrivateZoneLinkVNET.png)
 
-Now let’s link the new VNET. Click +Add. As shown in the below screenshot, we can link any VNET from any subscription in the same tenant.
+   Now let’s link the new VNET. Click +Add. As shown in the below screenshot, we can link any VNET from any subscription in the same tenant.
 
    ![Private DNS Add](/images/PrivateZoneLinkVNETAdd.png)
 
-As show below its added
+   As show below its added
 
    ![Private DNS Complete](/images/PrivateZoneLinkVNETComplete.png)
 
-Now let’s try again.
+   Now let’s try again.
 
    ![Kubectl Command Error](/images/AKSKubeCtlShow3.png)
 
-Since all the traffic goes via firewall, we need to allow the API server IP address in the firewall. In the above private zone overview, you can find the A name entry and the private IP address of API server. Allowed it in firewall network policy. 
+   Since all the traffic goes via firewall, we need to allow the API server IP address in the firewall. In the above private zone overview, you can find the A name entry and the private IP address of API server. Allowed it in firewall network policy. 
 
    ![Firewall Master Whitelisting](/images/FirewallNWPolicies2.png)
 
-Now let’s try again and it should work.
+   Now let’s try again and it should work.
 
    ![Kubectl Command Successful](/images/AKSKubeCtlShow4.png)
 
 > Note: Ensure you have the route table attached to all the SPOKE VNETs
 
-Now we see that the test VM in Spoke 2 is able to connect to a private AKS cluster running in Spoke 1. The connection between the VM in Spoke 2 and the AKS cluster is happening via the Azure Firewall.
+   Now we see that the test VM in Spoke 2 is able to connect to a private AKS cluster running in Spoke 1. The connection between the VM in Spoke 2 and the AKS cluster is happening via the Azure Firewall.
 
-So, we are able to overcome all the challenges mentioned earlier:
+   So, we are able to overcome all the challenges mentioned earlier:
 
-1. Restricting egress for AKS private cluster via Firewall
-2. Route Spoke-Spoke traffic via Hub
-3. Connecting private AKS cluster across VNets residing in different subscriptions
+    1. Restricting egress for AKS private cluster via Firewall
+    2. Route Spoke-Spoke traffic via Hub
+    3. Connecting private AKS cluster across VNets residing in different subscriptions
 
 Special thanks to @saurabhvartak1982  - Cloud Solution Architect @ Microsoft
 
